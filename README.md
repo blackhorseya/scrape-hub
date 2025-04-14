@@ -1,5 +1,9 @@
 # Go DDD Template Project
 
+`scrape-hub` 是一個中央監控平台，用於集中顯示部署在 AWS Lambda 上的定時網路爬蟲任務狀態。每個爬蟲任務獨立執行並在完成後將執行結果（如成功/失敗與 log）回報至 `scrape-hub`，以便在 Web UI 中統一查詢與監控。
+
+資料儲存採用 MongoDB，提供輕量且可擴展的事件儲存與查詢機制。
+
 This is a template project implementing Clean Architecture and Domain-Driven Design (DDD) principles in Go. Use this template as a starting point for your domain-driven microservices.
 
 ## Project Structure
@@ -68,7 +72,3 @@ Each directory contains its own README.md with specific guidance for that compon
 - Unit tests alongside the code
 - Integration tests in /tests
 - E2E tests in /tests/e2e
-
-## License
-
-MIT License - see [LICENSE](LICENSE) file for details
