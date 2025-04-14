@@ -3,6 +3,7 @@ module github.com/blackhorseya/scrape-hub
 go 1.23.2
 
 require (
+	github.com/auth0/go-jwt-middleware/v2 v2.3.0
 	github.com/aws/aws-lambda-go v1.48.0
 	github.com/awslabs/aws-lambda-go-api-proxy v0.16.2
 	github.com/caarlos0/env/v10 v10.0.0
@@ -222,6 +223,7 @@ require (
 	golang.org/x/text v0.23.0 // indirect
 	golang.org/x/tools v0.31.0 // indirect
 	google.golang.org/protobuf v1.36.5 // indirect
+	gopkg.in/go-jose/go-jose.v2 v2.6.3 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

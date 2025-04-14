@@ -10,21 +10,42 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	ginadapter "github.com/awslabs/aws-lambda-go-api-proxy/gin"
 	"github.com/blackhorseya/scrape-hub/configs"
+	"github.com/blackhorseya/scrape-hub/internal/delivery/middleware"
 	"github.com/gin-gonic/gin"
 )
 
+var auth0Middleware *middleware.Auth0Middleware
+
 // initRouter 初始化並回傳 Gin 路由器
-func initRouter() *gin.Engine {
+func initRouter(cfg *configs.Config) (*gin.Engine, error) {
 	r := gin.Default()
 
-	// 設定路由
+	// 建立 Auth0 中介層
+	var err error
+	auth0Middleware, err = middleware.NewAuth0Middleware(&cfg.Auth0)
+	if err != nil {
+		return nil, fmt.Errorf("初始化 Auth0 中介層失敗: %w", err)
+	}
+
+	// 公開路由
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"status": "ok",
 		})
 	})
 
-	return r
+	// 受保護的路由群組
+	protected := r.Group("/api")
+	protected.Use(auth0Middleware.EnsureValidToken())
+	{
+		protected.GET("/protected", func(c *gin.Context) {
+			c.JSON(200, gin.H{
+				"message": "這是一個受保護的端點",
+			})
+		})
+	}
+
+	return r, nil
 }
 
 // initLambdaHandler 初始化 Lambda 處理器
@@ -43,7 +64,11 @@ func loadConfig() *configs.Config {
 
 func main() {
 	cfg := loadConfig()
-	r := initRouter()
+
+	r, err := initRouter(cfg)
+	if err != nil {
+		log.Fatalf("初始化路由器失敗: %v", err)
+	}
 
 	// 透過環境變數判斷執行環境
 	if os.Getenv("AWS_LAMBDA_FUNCTION_NAME") != "" {

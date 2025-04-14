@@ -13,9 +13,16 @@ type ServerConfig struct {
 	Port int    `env:"SERVER_PORT" envDefault:"8080"`
 }
 
+// Auth0Config 定義 Auth0 設定
+type Auth0Config struct {
+	Domain   string `env:"AUTH0_DOMAIN" envDefault:""`
+	Audience string `env:"AUTH0_AUDIENCE" envDefault:""`
+}
+
 // Config 定義應用程式設定
 type Config struct {
 	Server ServerConfig
+	Auth0  Auth0Config
 }
 
 // LoadFromEnv 從環境變數載入設定
