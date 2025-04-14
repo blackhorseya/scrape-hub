@@ -1,30 +1,31 @@
 package main
 
 import (
-	"context"
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/blackhorseya/scrape-hub/configs"
 )
 
 func main() {
-	_, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	// 載入設定
+	cfg, err := configs.LoadFromEnv()
+	if err != nil {
+		log.Fatalf("載入設定失敗: %v", err)
+	}
 
-	// Setup signal handling
+	fmt.Printf("伺服器將在 %s:%d 啟動\n", cfg.Server.Host, cfg.Server.Port)
+
+	// 設定信號處理
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
 
-	// TODO: Initialize your application components here
-	// - Load configuration
-	// - Setup dependency injection
-	// - Initialize infrastructure
-	// - Start HTTP/gRPC servers
+	log.Println("服務啟動中...")
 
-	log.Println("Service starting...")
-
-	// Wait for termination signal
+	// 等待終止信號
 	<-signals
-	log.Println("Service shutting down...")
+	log.Println("服務關閉中...")
 }

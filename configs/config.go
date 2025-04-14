@@ -1,40 +1,40 @@
-package config
+package configs
 
 import (
 	"fmt"
-	"os"
 
-	"gopkg.in/yaml.v3"
+	"github.com/caarlos0/env/v10"
+	"github.com/joho/godotenv"
 )
 
-type Config struct {
-	Server struct {
-		Host string `yaml:"host"`
-		Port int    `yaml:"port"`
-	} `yaml:"server"`
-
-	Database struct {
-		Host     string `yaml:"host"`
-		Port     int    `yaml:"port"`
-		Name     string `yaml:"name"`
-		User     string `yaml:"user"`
-		Password string `yaml:"password"`
-	} `yaml:"database"`
+// ServerConfig 定義伺服器設定
+type ServerConfig struct {
+	Host string `env:"SERVER_HOST" envDefault:"localhost"`
+	Port int    `env:"SERVER_PORT" envDefault:"8080"`
 }
 
-func Load(path string) (*Config, error) {
-	config := &Config{}
+// Config 定義應用程式設定
+type Config struct {
+	Server ServerConfig
+}
 
-	file, err := os.Open(path)
-	if err != nil {
-		return nil, fmt.Errorf("error opening config file: %w", err)
+// LoadFromEnv 從環境變數載入設定
+// 它會先嘗試從專案根目錄的 .env 檔案載入變數，然後解析環境變數到 Config 物件
+func LoadFromEnv() (*Config, error) {
+	// 嘗試載入 .env 檔案
+	if err := godotenv.Load(); err != nil {
+		// 若 .env 檔案不存在，僅記錄訊息但不中斷執行
+		fmt.Printf("警告: 無法載入 .env 檔案: %v\n", err)
 	}
-	defer file.Close()
 
-	decoder := yaml.NewDecoder(file)
-	if err := decoder.Decode(config); err != nil {
-		return nil, fmt.Errorf("error decoding config file: %w", err)
+	cfg := &Config{}
+	opts := env.Options{
+		Prefix: "",
 	}
 
-	return config, nil
+	if err := env.ParseWithOptions(cfg, opts); err != nil {
+		return nil, fmt.Errorf("解析環境變數失敗: %w", err)
+	}
+
+	return cfg, nil
 }
