@@ -23,6 +23,7 @@ provider:
   runtime: provided.al2
   region: ap-northeast-1
   stage: ${opt:stage, 'dev'}
+  deploymentMethod: direct
 
 package:
   individually: true
