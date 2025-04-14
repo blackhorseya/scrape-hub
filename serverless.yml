@@ -22,7 +22,7 @@ provider:
   name: aws
   runtime: provided.al2
   region: ap-northeast-1
-  stage: ${opt:stage, 'dev'}
+  stage: ${opt:stage, 'prod'}
   deploymentMethod: direct
 
 package:
