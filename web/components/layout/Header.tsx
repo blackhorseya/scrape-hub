@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { MenuIcon, UserCircle } from "lucide-react";
+import { MenuIcon, UserCircle, LogOut } from "lucide-react";
+import { useUser } from "@auth0/nextjs-auth0/client";
 import React from "react";
 
 interface HeaderProps {
@@ -9,6 +10,8 @@ interface HeaderProps {
 }
 
 export default function Header({ onToggleSidebar }: HeaderProps) {
+  const { user, isLoading } = useUser();
+
   return (
     <header className="bg-white shadow-sm dark:bg-gray-900 sticky top-0 z-50">
       <nav className="mx-auto px-4 sm:px-6 lg:px-8" aria-label="頂部導覽">
@@ -29,13 +32,33 @@ export default function Header({ onToggleSidebar }: HeaderProps) {
             </div>
           </div>
           <div>
-            <Link
-              href="/login"
-              className="inline-flex items-center gap-2 rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-            >
-              <UserCircle className="h-5 w-5" aria-hidden="true" />
-              登入
-            </Link>
+            {!isLoading && (
+              user ? (
+                <div className="flex items-center gap-4">
+                  <Link
+                    href="/profile"
+                    className="text-sm text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
+                  >
+                    {user.name || user.email}
+                  </Link>
+                  <Link
+                    href="/api/auth/logout"
+                    className="inline-flex items-center gap-2 rounded-md bg-gray-100 dark:bg-gray-800 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700"
+                  >
+                    <LogOut className="h-5 w-5" aria-hidden="true" />
+                    登出
+                  </Link>
+                </div>
+              ) : (
+                <Link
+                  href="/api/auth/login"
+                  className="inline-flex items-center gap-2 rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                >
+                  <UserCircle className="h-5 w-5" aria-hidden="true" />
+                  登入
+                </Link>
+              )
+            )}
           </div>
         </div>
       </nav>
