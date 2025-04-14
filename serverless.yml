@@ -31,7 +31,6 @@ package:
 functions:
   api:
     handler: ./cmd/service/
-    timeout: 30
     events:
       - httpApi:
           path: /{proxy+}

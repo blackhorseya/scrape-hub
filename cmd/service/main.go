@@ -11,7 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var ginLambda *ginadapter.GinLambda
+var ginLambda *ginadapter.GinLambdaV2
 
 func init() {
 	// 載入設定
@@ -23,7 +23,7 @@ func init() {
 	// 初始化 Gin engine
 	r := gin.Default()
 
-	// TODO: 在此加入路由設定
+	// 設定路由
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"status": "ok",
@@ -31,10 +31,10 @@ func init() {
 	})
 
 	// 建立 Lambda 適配器
-	ginLambda = ginadapter.New(r)
+	ginLambda = ginadapter.NewV2(r)
 }
 
-func Handler(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func Handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error) {
 	return ginLambda.ProxyWithContext(ctx, req)
 }
 
