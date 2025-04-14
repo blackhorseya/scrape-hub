@@ -29,7 +29,7 @@ package:
 
 functions:
   api:
-    handler: ./cmd/service
+    handler: ./cmd/lambda/
     timeout: 30
     events:
       - httpApi:

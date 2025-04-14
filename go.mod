@@ -3,9 +3,11 @@ module github.com/blackhorseya/scrape-hub
 go 1.23.2
 
 require (
+	github.com/aws/aws-lambda-go v1.48.0
 	github.com/golangci/golangci-lint v1.64.8
 	github.com/swaggo/swag v1.16.4
 	go.uber.org/mock v0.5.1
+	go.uber.org/zap v1.24.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -192,7 +194,6 @@ require (
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/automaxprocs v1.6.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
-	go.uber.org/zap v1.24.0 // indirect
 	golang.org/x/exp/typeparams v0.0.0-20250210185358-939b2ce775ac // indirect
 	golang.org/x/mod v0.24.0 // indirect
 	golang.org/x/net v0.37.0 // indirect
