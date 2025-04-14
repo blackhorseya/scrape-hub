@@ -7,7 +7,6 @@ service: scrape-hub
 
 plugins:
   - serverless-go-plugin
-  - serverless-domain-manager
 
 custom:
   go:
@@ -18,12 +17,6 @@ custom:
     monorepo: false # if enabled, builds function every directory (useful for monorepo where go.mod is managed by each function
     supportedRuntimes: [ "provided.al2" ] # the plugin compiles a function only if runtime is declared here (either on function or provider level)
     buildProvidedRuntimeAsBootstrap: true # if enabled, builds and archive function with only single "bootstrap" binary (useful for runtimes like provided.al2)
-  customDomain:
-    domainName: scrape-hub-api.seancheng.space
-    basePath: ''
-    stage: ${self:provider.stage}
-    createRoute53Record: false
-    endpointType: regional
 
 provider:
   name: aws
