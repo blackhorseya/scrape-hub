@@ -1,4 +1,4 @@
-module github.com/blackhorseya/go-ddd
+module github.com/blackhorseya/scrape-hub
 
 go 1.23.2
 
