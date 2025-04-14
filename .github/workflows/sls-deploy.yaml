@@ -9,6 +9,7 @@ on:
       - 'go.mod'
       - 'go.sum'
       - 'serverless.yml'
+  workflow_dispatch:
 
 jobs:
   deploy:
