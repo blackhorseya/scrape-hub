@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { MenuIcon } from "lucide-react";
+import { MenuIcon, UserCircle } from "lucide-react";
 import React from "react";
 
 interface HeaderProps {
@@ -28,18 +28,13 @@ export default function Header({ onToggleSidebar }: HeaderProps) {
               </Link>
             </div>
           </div>
-          <div className="ml-10 flex items-center space-x-4">
+          <div>
             <Link
-              href="/tasks"
-              className="text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white"
+              href="/login"
+              className="inline-flex items-center gap-2 rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
             >
-              任務清單
-            </Link>
-            <Link
-              href="/settings"
-              className="text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white"
-            >
-              設定
+              <UserCircle className="h-5 w-5" aria-hidden="true" />
+              登入
             </Link>
           </div>
         </div>
