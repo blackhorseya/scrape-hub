@@ -1,0 +1,37 @@
+# "org" ensures this Service is used with the correct Serverless Framework Access Key.
+org: blackhorseya
+# "app" enables Serverless Framework Dashboard features and sharing them with other Services.
+app: side-projects
+# "service" is the name of this project. This will also be added to your AWS resource names.
+service: scrape-hub
+
+plugins:
+  - serverless-go-plugin
+
+custom:
+  go:
+    baseDir: . # folder where go.mod file lives, if set `handler` property should be set relatively to that folder
+    binDir: bin # target folder for binary files
+    cgo: 0 # CGO_ENABLED flag
+    cmd: 'GOOS=linux GOARCH=amd64 go build -ldflags="-s -w"' # compile command
+    monorepo: false # if enabled, builds function every directory (useful for monorepo where go.mod is managed by each function
+    supportedRuntimes: [ "provided.al2" ] # the plugin compiles a function only if runtime is declared here (either on function or provider level)
+    buildProvidedRuntimeAsBootstrap: true # if enabled, builds and archive function with only single "bootstrap" binary (useful for runtimes like provided.al2)
+
+provider:
+  name: aws
+  runtime: provided.al2
+  region: ap-northeast-1
+  stage: ${opt:stage, 'dev'}
+
+package:
+  individually: true
+
+functions:
+  api:
+    handler: ./cmd/service
+    timeout: 30
+    events:
+      - httpApi:
+          path: /{proxy+}
+          method: ANY
