@@ -13,16 +13,18 @@ jobs:
       matrix:
         node-version: [18.x]
     steps:
-    - uses: actions/checkout@v3
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
-    - run: npm ci
-    - name: serverless deploy
-      uses: serverless/github-action@v4
-      with:
-        args: -c "serverless plugin install --name serverless-go-plugin && serverless deploy"
-        entrypoint: /bin/sh
-      env:
-        SERVERLESS_ACCESS_KEY: ${{ secrets.SERVERLESS_ACCESS_KEY }}
+      - uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Setup Go environment
+        uses: actions/setup-go@v5.4.0
+      - run: npm ci
+      - name: serverless deploy
+        uses: serverless/github-action@v4
+        with:
+          args: -c "serverless plugin install --name serverless-go-plugin && serverless deploy"
+          entrypoint: /bin/sh
+        env:
+          SERVERLESS_ACCESS_KEY: ${{ secrets.SERVERLESS_ACCESS_KEY }}
