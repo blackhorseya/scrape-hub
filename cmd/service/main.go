@@ -1,31 +1,43 @@
 package main
 
 import (
-	"fmt"
+	"context"
 	"log"
-	"os"
-	"os/signal"
-	"syscall"
 
+	"github.com/aws/aws-lambda-go/events"
+	"github.com/aws/aws-lambda-go/lambda"
+	ginadapter "github.com/awslabs/aws-lambda-go-api-proxy/gin"
 	"github.com/blackhorseya/scrape-hub/configs"
+	"github.com/gin-gonic/gin"
 )
 
-func main() {
+var ginLambda *ginadapter.GinLambda
+
+func init() {
 	// 載入設定
-	cfg, err := configs.LoadFromEnv()
+	_, err := configs.LoadFromEnv()
 	if err != nil {
 		log.Fatalf("載入設定失敗: %v", err)
 	}
 
-	fmt.Printf("伺服器將在 %s:%d 啟動\n", cfg.Server.Host, cfg.Server.Port)
+	// 初始化 Gin engine
+	r := gin.Default()
 
-	// 設定信號處理
-	signals := make(chan os.Signal, 1)
-	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
+	// TODO: 在此加入路由設定
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"status": "ok",
+		})
+	})
 
-	log.Println("服務啟動中...")
+	// 建立 Lambda 適配器
+	ginLambda = ginadapter.New(r)
+}
 
-	// 等待終止信號
-	<-signals
-	log.Println("服務關閉中...")
+func Handler(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	return ginLambda.ProxyWithContext(ctx, req)
+}
+
+func main() {
+	lambda.Start(Handler)
 }
