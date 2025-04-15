@@ -1,7 +1,10 @@
 package http
 
 import (
+	"time"
+
 	"github.com/blackhorseya/scrape-hub/configs"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -24,6 +27,16 @@ func NewServer(cfg *configs.Config) (Server, error) {
 	// 設定中介層
 	engine.Use(gin.Recovery())
 	engine.Use(gin.Logger())
+
+	// 設定 CORS
+	engine.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
 
 	// 註冊基礎路由
 	engine.GET("/health", func(c *gin.Context) {
