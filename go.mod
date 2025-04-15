@@ -14,6 +14,7 @@ require (
 	github.com/caarlos0/env/v10 v10.0.0
 	github.com/gin-gonic/gin v1.9.1
 	github.com/golangci/golangci-lint v1.64.8
+	github.com/google/wire v0.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/swaggo/swag v1.16.4
 	go.uber.org/mock v0.5.1
