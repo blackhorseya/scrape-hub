@@ -12,6 +12,18 @@ interface HeaderProps {
 export default function Header({ onToggleSidebar }: HeaderProps) {
   const { user, isLoading } = useUser();
 
+  // 處理登入點擊事件
+  const handleLoginClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    window.location.href = "/api/auth/login";
+  };
+  
+  // 處理登出點擊事件
+  const handleLogoutClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    window.location.href = "/api/auth/logout";
+  };
+
   return (
     <header className="bg-white shadow-sm dark:bg-gray-900 sticky top-0 z-50">
       <nav className="mx-auto px-4 sm:px-6 lg:px-8" aria-label="頂部導覽">
@@ -41,22 +53,24 @@ export default function Header({ onToggleSidebar }: HeaderProps) {
                   >
                     {user.name || user.email}
                   </Link>
-                  <Link
-                    href="/api/auth/logout"
+                  <a
+                    href="#"
+                    onClick={handleLogoutClick}
                     className="inline-flex items-center gap-2 rounded-md bg-gray-100 dark:bg-gray-800 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700"
                   >
                     <LogOut className="h-5 w-5" aria-hidden="true" />
                     登出
-                  </Link>
+                  </a>
                 </div>
               ) : (
-                <Link
-                  href="/api/auth/login"
+                <a
+                  href="#"
+                  onClick={handleLoginClick}
                   className="inline-flex items-center gap-2 rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
                 >
                   <UserCircle className="h-5 w-5" aria-hidden="true" />
                   登入
-                </Link>
+                </a>
               )
             )}
           </div>
