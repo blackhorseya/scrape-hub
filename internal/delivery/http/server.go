@@ -1,10 +1,7 @@
 package http
 
 import (
-	"fmt"
-
 	"github.com/blackhorseya/scrape-hub/configs"
-	"github.com/blackhorseya/scrape-hub/internal/delivery/middleware"
 	"github.com/gin-gonic/gin"
 )
 
@@ -28,20 +25,10 @@ func NewServer(cfg *configs.Config) (Server, error) {
 	engine.Use(gin.Recovery())
 	engine.Use(gin.Logger())
 
-	// 建立 Auth0 中介層
-	auth0Mid, err := middleware.NewAuth0Middleware(&cfg.Auth0)
-	if err != nil {
-		return nil, fmt.Errorf("初始化 Auth0 中介層失敗: %w", err)
-	}
-
 	// 註冊基礎路由
 	engine.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{"status": "ok"})
 	})
-
-	// 受保護的路由群組
-	protected := engine.Group("/api")
-	protected.Use(auth0Mid.EnsureValidToken())
 
 	return &serverImpl{
 		engine: engine,

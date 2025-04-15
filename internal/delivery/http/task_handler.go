@@ -3,6 +3,7 @@ package http
 import (
 	"net/http"
 
+	"github.com/blackhorseya/scrape-hub/internal/delivery/middleware"
 	"github.com/blackhorseya/scrape-hub/internal/usecase/query"
 	"github.com/blackhorseya/scrape-hub/pkg/contextx"
 	"github.com/gin-gonic/gin"
@@ -12,13 +13,15 @@ import (
 type TaskHandler struct {
 	taskQuery *query.TaskQuery
 	group     *gin.RouterGroup
+	auth0     *middleware.Auth0Middleware
 }
 
 // NewTaskHandler 建立任務處理器實例
-func NewTaskHandler(group *gin.RouterGroup, taskQuery *query.TaskQuery) *TaskHandler {
+func NewTaskHandler(group *gin.RouterGroup, auth0 *middleware.Auth0Middleware, taskQuery *query.TaskQuery) *TaskHandler {
 	handler := &TaskHandler{
 		taskQuery: taskQuery,
 		group:     group,
+		auth0:     auth0,
 	}
 
 	handler.RegisterRoutes()
@@ -28,8 +31,12 @@ func NewTaskHandler(group *gin.RouterGroup, taskQuery *query.TaskQuery) *TaskHan
 // RegisterRoutes 註冊路由
 func (h *TaskHandler) RegisterRoutes() {
 	v1 := h.group.Group("/v1")
+
+	// tasks 路由需要驗證
+	tasks := v1.Group("/tasks")
+	tasks.Use(h.auth0.EnsureValidToken())
 	{
-		v1.GET("/tasks", h.ListScheduledTasks)
+		tasks.GET("", h.ListScheduledTasks)
 	}
 }
 

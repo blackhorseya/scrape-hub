@@ -1,8 +1,11 @@
 package providers
 
 import (
+	"fmt"
+
 	"github.com/blackhorseya/scrape-hub/configs"
 	httpdelivery "github.com/blackhorseya/scrape-hub/internal/delivery/http"
+	"github.com/blackhorseya/scrape-hub/internal/delivery/middleware"
 	"github.com/blackhorseya/scrape-hub/internal/usecase/query"
 	"github.com/google/wire"
 )
@@ -14,9 +17,15 @@ func ProvideHTTPServer(cfg *configs.Config, taskQuery *query.TaskQuery) (httpdel
 		return nil, err
 	}
 
+	// 建立 Auth0 中介層
+	auth0Mid, err := middleware.NewAuth0Middleware(&cfg.Auth0)
+	if err != nil {
+		return nil, fmt.Errorf("初始化 Auth0 中介層失敗: %w", err)
+	}
+
 	// 註冊任務處理器
 	apiGroup := server.Engine().Group("/api")
-	httpdelivery.NewTaskHandler(apiGroup, taskQuery)
+	httpdelivery.NewTaskHandler(apiGroup, auth0Mid, taskQuery)
 
 	return server, nil
 }

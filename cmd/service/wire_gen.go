@@ -12,6 +12,10 @@ import (
 	"github.com/blackhorseya/scrape-hub/internal/delivery/http"
 )
 
+import (
+	_ "github.com/blackhorseya/scrape-hub/docs"
+)
+
 // Injectors from wire.go:
 
 // InitializeApp 初始化應用程式
