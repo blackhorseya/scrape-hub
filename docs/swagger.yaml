@@ -64,4 +64,9 @@ paths:
       summary: 列出由定時任務觸發的 Lambda 函數
       tags:
       - tasks
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

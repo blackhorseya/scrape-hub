@@ -19,6 +19,10 @@ import (
 // @version 1.0
 // @description 這是一個 Web Scraping 服務的 API 文件
 // @BasePath /api
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @Security BearerAuth
 func main() {
 	cfg, err := configs.LoadFromEnv()
 	if err != nil {
