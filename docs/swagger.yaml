@@ -1,0 +1,63 @@
+definitions:
+  entity.Task:
+    properties:
+      cronExpression:
+        description: CronExpression 是定時表達式
+        type: string
+      functionName:
+        description: FunctionName 是 Lambda 函數名稱
+        type: string
+      lastExecutionStatus:
+        allOf:
+        - $ref: '#/definitions/entity.TaskStatus'
+        description: LastExecutionStatus 是最後執行狀態
+      lastTriggeredTime:
+        description: LastTriggeredTime 是最後執行時間
+        type: string
+    type: object
+  entity.TaskStatus:
+    enum:
+    - Success
+    - Failure
+    type: string
+    x-enum-varnames:
+    - TaskStatusSuccess
+    - TaskStatusFailure
+  http.Response:
+    properties:
+      code:
+        type: integer
+      data: {}
+      message:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /v1/tasks:
+    get:
+      description: 取得所有使用 cron 表達式排程的 Lambda 函數清單
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/entity.Task'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.Response'
+      security:
+      - BearerAuth: []
+      summary: 列出由定時任務觸發的 Lambda 函數
+      tags:
+      - tasks
+swagger: "2.0"

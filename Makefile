@@ -37,7 +37,7 @@ gen: gen-swagger
 
 .PHONY: gen-swagger
 gen-swagger: ## Generate Swagger documentation
-	go run github.com/swaggo/swag/cmd/swag init -g ./cmd/restful/impl.go --output ./docs
+	go run github.com/swaggo/swag/cmd/swag init -g ./cmd/service/main.go --output ./docs
 
 .PHONY: docker-run
 docker-run: ## Run the application in a Docker container
