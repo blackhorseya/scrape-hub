@@ -6,6 +6,17 @@ export class ApiError extends Error {
   }
 }
 
+// 任務型別定義
+export interface Task {
+  id: string;
+  name: string;
+  description?: string;
+  schedule: string;
+  status: 'active' | 'inactive';
+  lastRun?: string;
+  lastStatus?: 'success' | 'failed';
+}
+
 // API 請求設定介面
 interface RequestOptions extends RequestInit {
   accessToken?: string;
@@ -51,4 +62,12 @@ export async function fetchApi<T>(
 
   // 解析並回傳回應內容
   return response.json();
+}
+
+// 取得任務列表
+export async function getTasks(accessToken: string): Promise<Task[]> {
+  return fetchApi<Task[]>('/api/v1/tasks', {
+    method: 'GET',
+    accessToken,
+  });
 }
