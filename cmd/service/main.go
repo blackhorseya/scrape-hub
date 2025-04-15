@@ -8,16 +8,53 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/cloudwatch"
+	"github.com/aws/aws-sdk-go-v2/service/eventbridge"
+	lambdasvc "github.com/aws/aws-sdk-go-v2/service/lambda"
 	ginadapter "github.com/awslabs/aws-lambda-go-api-proxy/gin"
 	"github.com/blackhorseya/scrape-hub/configs"
+	httpdelivery "github.com/blackhorseya/scrape-hub/internal/delivery/http"
 	"github.com/blackhorseya/scrape-hub/internal/delivery/middleware"
+	"github.com/blackhorseya/scrape-hub/internal/domain/repository"
+	"github.com/blackhorseya/scrape-hub/internal/infra/persistence"
+	"github.com/blackhorseya/scrape-hub/internal/usecase/query"
 	"github.com/gin-gonic/gin"
 )
 
 var auth0Middleware *middleware.Auth0Middleware
 
+// initAWSClients 初始化 AWS 客戶端
+func initAWSClients() (*eventbridge.Client, *lambdasvc.Client, *cloudwatch.Client, error) {
+	cfg, err := config.LoadDefaultConfig(context.Background())
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("載入 AWS 設定失敗: %w", err)
+	}
+
+	ebClient := eventbridge.NewFromConfig(cfg)
+	lwClient := lambdasvc.NewFromConfig(cfg)
+	cwClient := cloudwatch.NewFromConfig(cfg)
+
+	return ebClient, lwClient, cwClient, nil
+}
+
+// initRepositories 初始化儲存庫
+func initRepositories(ebClient *eventbridge.Client, lwClient *lambdasvc.Client, cwClient *cloudwatch.Client) (repository.TaskRepository, error) {
+	return persistence.NewTaskRepository(ebClient, lwClient, cwClient), nil
+}
+
+// initUseCases 初始化使用案例
+func initUseCases(taskRepo repository.TaskRepository) *query.TaskQuery {
+	return query.NewTaskQuery(taskRepo)
+}
+
+// initHandlers 初始化處理器
+func initHandlers(taskQuery *query.TaskQuery) *httpdelivery.TaskHandler {
+	return httpdelivery.NewTaskHandler(taskQuery)
+}
+
 // initRouter 初始化並回傳 Gin 路由器
-func initRouter(cfg *configs.Config) (*gin.Engine, error) {
+func initRouter(cfg *configs.Config, taskHandler *httpdelivery.TaskHandler) (*gin.Engine, error) {
 	r := gin.Default()
 
 	// 建立 Auth0 中介層
@@ -38,11 +75,7 @@ func initRouter(cfg *configs.Config) (*gin.Engine, error) {
 	protected := r.Group("/api")
 	protected.Use(auth0Middleware.EnsureValidToken())
 	{
-		protected.GET("/protected", func(c *gin.Context) {
-			c.JSON(200, gin.H{
-				"message": "這是一個受保護的端點",
-			})
-		})
+		protected.GET("/v1/tasks", taskHandler.ListScheduledTasks)
 	}
 
 	return r, nil
@@ -65,7 +98,21 @@ func loadConfig() *configs.Config {
 func main() {
 	cfg := loadConfig()
 
-	r, err := initRouter(cfg)
+	// 初始化各層元件
+	ebClient, lwClient, cwClient, err := initAWSClients()
+	if err != nil {
+		log.Fatalf("初始化 AWS 客戶端失敗: %v", err)
+	}
+
+	taskRepo, err := initRepositories(ebClient, lwClient, cwClient)
+	if err != nil {
+		log.Fatalf("初始化儲存庫失敗: %v", err)
+	}
+
+	taskQuery := initUseCases(taskRepo)
+	taskHandler := initHandlers(taskQuery)
+
+	r, err := initRouter(cfg, taskHandler)
 	if err != nil {
 		log.Fatalf("初始化路由器失敗: %v", err)
 	}
