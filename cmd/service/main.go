@@ -10,8 +10,15 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	ginadapter "github.com/awslabs/aws-lambda-go-api-proxy/gin"
 	"github.com/blackhorseya/scrape-hub/configs"
+	_ "github.com/blackhorseya/scrape-hub/docs"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
+// @title Scrape Hub API
+// @version 1.0
+// @description 這是一個 Web Scraping 服務的 API 文件
+// @BasePath /api
 func main() {
 	cfg, err := configs.LoadFromEnv()
 	if err != nil {
@@ -22,6 +29,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("初始化應用程式失敗: %v", err)
 	}
+
+	// 設定 Swagger 路由
+	server.Engine().GET("/api/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// 透過環境變數判斷執行環境
 	if os.Getenv("AWS_LAMBDA_FUNCTION_NAME") != "" {
