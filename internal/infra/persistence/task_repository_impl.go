@@ -46,7 +46,7 @@ func (r *TaskRepositoryImpl) ListTasksBySchedule(ctx contextx.Contextx) ([]*enti
 	tasks := make([]*entity.Task, 0)
 	for _, rule := range rules.Rules {
 		// 過濾出使用 cron 表達式的規則
-		if !strings.HasPrefix(*rule.ScheduleExpression, "cron") {
+		if rule.ScheduleExpression == nil || !strings.HasPrefix(*rule.ScheduleExpression, "cron") {
 			continue
 		}
 
