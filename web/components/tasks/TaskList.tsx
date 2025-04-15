@@ -82,10 +82,7 @@ export default function TaskList() {
               排程
             </th>
             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-              狀態
-            </th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-              最後執行
+              最後執行時間
             </th>
             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
               執行結果
@@ -94,35 +91,24 @@ export default function TaskList() {
         </thead>
         <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
           {tasks.map((task) => (
-            <tr key={task.id}>
+            <tr key={task.functionName}>
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
-                {task.name}
+                {task.functionName}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                {task.schedule}
+                {task.cronExpression}
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                {new Date(task.lastTriggeredTime).toLocaleString('zh-TW')}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm">
                 <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                  task.status === 'active'
+                  task.lastExecutionStatus === 'Success'
                     ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
-                    : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300'
+                    : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
                 }`}>
-                  {task.status === 'active' ? '運行中' : '已停止'}
+                  {task.lastExecutionStatus === 'Success' ? '成功' : '失敗'}
                 </span>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                {task.lastRun ? new Date(task.lastRun).toLocaleString('zh-TW') : '從未執行'}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm">
-                {task.lastStatus && (
-                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                    task.lastStatus === 'success'
-                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
-                      : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
-                  }`}>
-                    {task.lastStatus === 'success' ? '成功' : '失敗'}
-                  </span>
-                )}
               </td>
             </tr>
           ))}

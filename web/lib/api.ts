@@ -8,13 +8,10 @@ export class ApiError extends Error {
 
 // 任務型別定義
 export interface Task {
-  id: string;
-  name: string;
-  description?: string;
-  schedule: string;
-  status: 'active' | 'inactive';
-  lastRun?: string;
-  lastStatus?: 'success' | 'failed';
+  functionName: string;
+  cronExpression: string;
+  lastTriggeredTime: string;
+  lastExecutionStatus: 'Success' | 'Failure';
 }
 
 // API 請求設定介面
@@ -66,8 +63,9 @@ export async function fetchApi<T>(
 
 // 取得任務列表
 export async function getTasks(accessToken: string): Promise<Task[]> {
-  return fetchApi<Task[]>('/api/v1/tasks', {
+  const response = await fetchApi<{ data: Task[] }>('/api/v1/tasks', {
     method: 'GET',
     accessToken,
   });
+  return response.data;
 }
