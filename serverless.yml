@@ -24,6 +24,8 @@ provider:
   region: ap-northeast-1
   stage: ${opt:stage, 'prod'}
   deploymentMethod: direct
+  httpApi:
+    cors: true
   environment:
     AUTH0_DOMAIN: blackhorseya.us.auth0.com
     AUTH0_AUDIENCE: https://scrape-hub-api.seancheng.space/
@@ -38,4 +40,3 @@ functions:
       - httpApi:
           path: /{proxy+}
           method: ANY
-          cors: true
