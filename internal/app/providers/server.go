@@ -23,9 +23,15 @@ func ProvideHTTPServer(cfg *configs.Config, taskQuery *query.TaskQuery) (httpdel
 		return nil, fmt.Errorf("初始化 Auth0 中介層失敗: %w", err)
 	}
 
+	// 建立授權中介層
+	authzMid := middleware.NewAuthzMiddleware()
+	if err != nil {
+		return nil, fmt.Errorf("初始化授權中介層失敗: %w", err)
+	}
+
 	// 註冊任務處理器
 	apiGroup := server.Engine().Group("/api")
-	httpdelivery.NewTaskHandler(apiGroup, auth0Mid, taskQuery)
+	httpdelivery.NewTaskHandler(apiGroup, auth0Mid, authzMid, taskQuery)
 
 	return server, nil
 }

@@ -14,14 +14,21 @@ type TaskHandler struct {
 	taskQuery *query.TaskQuery
 	group     *gin.RouterGroup
 	auth0     *middleware.Auth0Middleware
+	authz     *middleware.AuthzMiddleware
 }
 
 // NewTaskHandler 建立任務處理器實例
-func NewTaskHandler(group *gin.RouterGroup, auth0 *middleware.Auth0Middleware, taskQuery *query.TaskQuery) *TaskHandler {
+func NewTaskHandler(
+	group *gin.RouterGroup,
+	auth0 *middleware.Auth0Middleware,
+	authz *middleware.AuthzMiddleware,
+	taskQuery *query.TaskQuery,
+) *TaskHandler {
 	handler := &TaskHandler{
 		taskQuery: taskQuery,
 		group:     group,
 		auth0:     auth0,
+		authz:     authz,
 	}
 
 	handler.RegisterRoutes()
@@ -32,9 +39,10 @@ func NewTaskHandler(group *gin.RouterGroup, auth0 *middleware.Auth0Middleware, t
 func (h *TaskHandler) RegisterRoutes() {
 	v1 := h.group.Group("/v1")
 
-	// tasks 路由需要驗證
+	// tasks 路由需要驗證和授權
 	tasks := v1.Group("/tasks")
 	tasks.Use(h.auth0.EnsureValidToken())
+	tasks.Use(h.authz.EnsureAuthorized())
 	{
 		tasks.GET("", h.ListScheduledTasks)
 	}
