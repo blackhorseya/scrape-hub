@@ -23,11 +23,11 @@ type serverImpl struct {
 // NewServer 建立新的 HTTP 伺服器實例
 func NewServer(cfg *configs.Config) (Server, error) {
 	engine := gin.New()
-	
+
 	// 設定中介層
 	engine.Use(gin.Recovery())
 	engine.Use(gin.Logger())
-	
+
 	// 建立 Auth0 中介層
 	auth0Mid, err := middleware.NewAuth0Middleware(&cfg.Auth0)
 	if err != nil {
