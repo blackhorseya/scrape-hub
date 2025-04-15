@@ -24,6 +24,9 @@ provider:
   region: ap-northeast-1
   stage: ${opt:stage, 'prod'}
   deploymentMethod: direct
+  environment:
+    AUTH0_DOMAIN: blackhorseya.us.auth0.com
+    AUTH0_AUDIENCE: https://scrape-hub-api.seancheng.space/
 
 package:
   individually: true
