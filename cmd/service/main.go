@@ -15,16 +15,11 @@ import (
 	ginadapter "github.com/awslabs/aws-lambda-go-api-proxy/gin"
 	"github.com/blackhorseya/scrape-hub/configs"
 	httpdelivery "github.com/blackhorseya/scrape-hub/internal/delivery/http"
-	"github.com/blackhorseya/scrape-hub/internal/delivery/middleware"
 	"github.com/blackhorseya/scrape-hub/internal/domain/repository"
 	"github.com/blackhorseya/scrape-hub/internal/infra/persistence"
 	"github.com/blackhorseya/scrape-hub/internal/usecase/query"
-	"github.com/gin-gonic/gin"
 )
 
-var auth0Middleware *middleware.Auth0Middleware
-
-// initAWSClients 初始化 AWS 客戶端
 func initAWSClients() (*eventbridge.Client, *lambdasvc.Client, *cloudwatch.Client, error) {
 	cfg, err := config.LoadDefaultConfig(context.Background())
 	if err != nil {
@@ -38,65 +33,34 @@ func initAWSClients() (*eventbridge.Client, *lambdasvc.Client, *cloudwatch.Clien
 	return ebClient, lwClient, cwClient, nil
 }
 
-// initRepositories 初始化儲存庫
 func initRepositories(ebClient *eventbridge.Client, lwClient *lambdasvc.Client, cwClient *cloudwatch.Client) (repository.TaskRepository, error) {
 	return persistence.NewTaskRepository(ebClient, lwClient, cwClient), nil
 }
 
-// initUseCases 初始化使用案例
 func initUseCases(taskRepo repository.TaskRepository) *query.TaskQuery {
 	return query.NewTaskQuery(taskRepo)
 }
 
-// initHandlers 初始化處理器
-func initHandlers(taskQuery *query.TaskQuery) *httpdelivery.TaskHandler {
-	return httpdelivery.NewTaskHandler(taskQuery)
-}
-
-// initRouter 初始化並回傳 Gin 路由器
-func initRouter(cfg *configs.Config, taskHandler *httpdelivery.TaskHandler) (*gin.Engine, error) {
-	r := gin.Default()
-
-	// 建立 Auth0 中介層
-	var err error
-	auth0Middleware, err = middleware.NewAuth0Middleware(&cfg.Auth0)
+// initServer 初始化 HTTP 伺服器並註冊所有路由
+func initServer(cfg *configs.Config, taskQuery *query.TaskQuery) (httpdelivery.Server, error) {
+	server, err := httpdelivery.NewServer(cfg)
 	if err != nil {
-		return nil, fmt.Errorf("初始化 Auth0 中介層失敗: %w", err)
+		return nil, fmt.Errorf("初始化伺服器失敗: %w", err)
 	}
 
-	// 公開路由
-	r.GET("/health", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"status": "ok",
-		})
-	})
+	// 註冊任務處理器
+	engine := server.Engine()
+	apiGroup := engine.Group("/api")
+	httpdelivery.NewTaskHandler(apiGroup, taskQuery)
 
-	// 受保護的路由群組
-	protected := r.Group("/api")
-	protected.Use(auth0Middleware.EnsureValidToken())
-	{
-		protected.GET("/v1/tasks", taskHandler.ListScheduledTasks)
-	}
-
-	return r, nil
+	return server, nil
 }
 
-// initLambdaHandler 初始化 Lambda 處理器
-func initLambdaHandler(r *gin.Engine) *ginadapter.GinLambdaV2 {
-	return ginadapter.NewV2(r)
-}
-
-// 載入設定並回傳
-func loadConfig() *configs.Config {
+func main() {
 	cfg, err := configs.LoadFromEnv()
 	if err != nil {
 		log.Fatalf("載入設定失敗: %v", err)
 	}
-	return cfg
-}
-
-func main() {
-	cfg := loadConfig()
 
 	// 初始化各層元件
 	ebClient, lwClient, cwClient, err := initAWSClients()
@@ -110,17 +74,16 @@ func main() {
 	}
 
 	taskQuery := initUseCases(taskRepo)
-	taskHandler := initHandlers(taskQuery)
 
-	r, err := initRouter(cfg, taskHandler)
+	server, err := initServer(cfg, taskQuery)
 	if err != nil {
-		log.Fatalf("初始化路由器失敗: %v", err)
+		log.Fatalf("初始化伺服器失敗: %v", err)
 	}
 
 	// 透過環境變數判斷執行環境
 	if os.Getenv("AWS_LAMBDA_FUNCTION_NAME") != "" {
 		// AWS Lambda 環境
-		h := initLambdaHandler(r)
+		h := ginadapter.NewV2(server.Engine())
 		lambda.Start(func(ctx context.Context, req events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error) {
 			return h.ProxyWithContext(ctx, req)
 		})
@@ -128,7 +91,7 @@ func main() {
 		// 本地開發環境
 		addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
 		log.Printf("本地伺服器啟動於 %s", addr)
-		if err := r.Run(addr); err != nil {
+		if err := server.Engine().Run(addr); err != nil {
 			log.Fatalf("伺服器啟動失敗: %v", err)
 		}
 	}

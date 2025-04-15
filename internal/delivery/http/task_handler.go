@@ -11,12 +11,25 @@ import (
 // TaskHandler 處理任務相關的 HTTP 請求
 type TaskHandler struct {
 	taskQuery *query.TaskQuery
+	group     *gin.RouterGroup
 }
 
 // NewTaskHandler 建立任務處理器實例
-func NewTaskHandler(taskQuery *query.TaskQuery) *TaskHandler {
-	return &TaskHandler{
+func NewTaskHandler(group *gin.RouterGroup, taskQuery *query.TaskQuery) *TaskHandler {
+	handler := &TaskHandler{
 		taskQuery: taskQuery,
+		group:     group,
+	}
+
+	handler.RegisterRoutes()
+	return handler
+}
+
+// RegisterRoutes 註冊路由
+func (h *TaskHandler) RegisterRoutes() {
+	v1 := h.group.Group("/v1")
+	{
+		v1.GET("/tasks", h.ListScheduledTasks)
 	}
 }
 
@@ -34,13 +47,13 @@ func (h *TaskHandler) ListScheduledTasks(c *gin.Context) {
 
 	tasks, err := h.taskQuery.ListScheduledTasks(ctx)
 	if err != nil {
-		ctx.Error("列出排程任務失敗", "error", err)
-		c.JSON(http.StatusInternalServerError, NewErrorResponse(
-			http.StatusInternalServerError,
-			"取得任務列表失敗",
-		))
+		c.JSON(http.StatusInternalServerError, Response{
+			Message: err.Error(),
+		})
 		return
 	}
 
-	c.JSON(http.StatusOK, NewSuccessResponse(tasks))
+	c.JSON(http.StatusOK, Response{
+		Data: tasks,
+	})
 }
