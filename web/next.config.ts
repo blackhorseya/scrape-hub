@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { NextResponse } from 'next/server';
 
 const nextConfig: NextConfig = {
   env: {
@@ -11,6 +12,25 @@ const nextConfig: NextConfig = {
       scope: 'openid profile email',
     },
   },
+  headers: async () => [
+    {
+      source: '/api/:path*',
+      headers: [
+        {
+          key: 'Access-Control-Allow-Origin',
+          value: '*',
+        },
+        {
+          key: 'Access-Control-Allow-Methods',
+          value: 'GET, POST, PUT, DELETE, OPTIONS',
+        },
+        {
+          key: 'Access-Control-Allow-Headers',
+          value: 'Content-Type, Authorization',
+        },
+      ],
+    },
+  ],
 };
 
 export default nextConfig;
