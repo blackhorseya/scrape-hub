@@ -29,6 +29,18 @@ provider:
   environment:
     AUTH0_DOMAIN: blackhorseya.us.auth0.com
     AUTH0_AUDIENCE: https://scrape-hub-api.seancheng.space/
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - events:ListRules
+            - events:DescribeRule
+            - events:ListTargetsByRule
+            - lambda:ListFunctions
+            - lambda:GetFunction
+            - logs:FilterLogEvents
+          Resource: "*"
 
 package:
   individually: true
